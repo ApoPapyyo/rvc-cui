@@ -4,4 +4,4 @@ base=$(dirname "$0")
 
 source $base/venv/bin/activate
 
-python $base/rvc.py "$@"
+python3 $base/rvc.py "$@"
