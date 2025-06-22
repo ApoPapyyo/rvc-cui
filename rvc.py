@@ -1,13 +1,13 @@
-
+import os
+import sys
+import argparse
 if __name__ == '__main__':
-  import sys
-  import argparse
   class ArgvProxy:
     def __init__(self, original_argv):
       self._org_argv = original_argv
       parser = argparse.ArgumentParser()
       parser.add_argument("-i", "--input", help="Input audio file name", type=str)
-      parser.add_argument("-o", "--output", help="Output audio file name", type=str)
+      parser.add_argument("-o", "--output", help="Output audio file name", type=str, default='')
       parser.add_argument("-m", "--model", help="Model file name", type=str)
       parser.add_argument("-s", "--speaker-id", help="Speaker ID", type=int, default=0)
       parser.add_argument("-e", "--embedder", help="[Embedder Model];[Embedder Output Layer]", type=str, default="auto;auto")
@@ -17,11 +17,14 @@ if __name__ == '__main__':
       parser.add_argument('-I', '--auto-index-load', type=bool, default=False)
       parser.add_argument('--faiss-index-file', type=str, default='')
       parser.add_argument('--retrieval-feature-ratio', type=float, default=1.0)
+      parser.add_argument('--list-model', help='Show installed model name', type=bool, default=False)
       if len(self._org_argv) <= 1:
         self._org_argv.append('--help')
       opts, unknown = parser.parse_known_args()
       self._opts = vars(opts)
       self._argv = [self._org_argv[0]] + unknown
+      if self._opts['output'] == '':
+          self._opts['output'] = os.path.basename(self._opts['intput']) + '_' + self._opts['model'] + '.wav'
 
     def __getitem__(self, index):
       return self._argv[index]
@@ -41,8 +44,13 @@ if __name__ == '__main__':
 
   # sys.argv を差し替え
   sys.argv = ArgvProxy(sys.argv)
+from module.shared import ROOT_DIR, device, is_half
+MODELS_DIR = os.path.join(ROOT_DIR, "models")
+if sys.argv.get('list_model'):
+    os.system(f"for i in {MODELS_DIR}/*.pth; do " + 'echo \"${i%.pth}\"; done')
+    sys.exit(0)
 
-import os
+
 import re
 from typing import *
 
@@ -56,10 +64,8 @@ from lib.rvc.models import (SynthesizerTrnMs256NSFSid,
 from lib.rvc.pipeline import VocalConvertPipeline
 
 from modules.cmd_opts import opts
-from modules.shared import ROOT_DIR, device, is_half
 from modules.utils import load_audio
 
-AUDIO_OUT_DIR = opts.output_dir or os.path.join(ROOT_DIR, "outputs")
 
 
 EMBEDDINGS_LIST = {
@@ -160,7 +166,7 @@ class VoiceConvertModel:
         auto_load_index: bool,
         faiss_index_file: str,
         index_rate: float,
-        output_file: str = AUDIO_OUT_DIR,
+        output_file: str,
     ):
         if not input_audio:
             raise Exception("You need to set Source Audio")
@@ -248,7 +254,7 @@ class VoiceConvertModel:
         return os.path.join(MODELS_DIR, "checkpoints", f"{basename}.index")
 
 
-MODELS_DIR = opts.models_dir or os.path.join(ROOT_DIR, "models")
+
 vc_model: Optional[VoiceConvertModel] = None
 embedder_model: Optional[HubertModel] = None
 loaded_embedder_model = ""
