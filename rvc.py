@@ -6,7 +6,7 @@ if __name__ == '__main__':
     def __init__(self, original_argv):
       self._org_argv = original_argv
       parser = argparse.ArgumentParser()
-      parser.add_argument("-i", "--input", help="Input audio file name", type=str)
+      parser.add_argument("-i", "--input", help="Input audio file name", type=str, default='')
       parser.add_argument("-o", "--output", help="Output audio file name", type=str, default='')
       parser.add_argument("-m", "--model", help="Model file name", type=str)
       parser.add_argument("-s", "--speaker-id", help="Speaker ID", type=int, default=0)
@@ -17,14 +17,14 @@ if __name__ == '__main__':
       parser.add_argument('-I', '--auto-index-load', type=bool, default=False)
       parser.add_argument('--faiss-index-file', type=str, default='')
       parser.add_argument('--retrieval-feature-ratio', type=float, default=1.0)
-      parser.add_argument('--list-model', help='Show installed model name', type=bool, default=False)
+      parser.add_argument('--list-models', help='Show installed model name', action='store_true')
       if len(self._org_argv) <= 1:
         self._org_argv.append('--help')
       opts, unknown = parser.parse_known_args()
       self._opts = vars(opts)
       self._argv = [self._org_argv[0]] + unknown
-      if self._opts['output'] == '':
-          self._opts['output'] = os.path.basename(self._opts['intput']) + '_' + self._opts['model'] + '.wav'
+      if self._opts['output'] == '' and self._opts['input'] != '':
+          self._opts['output'] = os.path.basename(self._opts['input']) + '_' + self._opts['model'] + '.wav'
 
     def __getitem__(self, index):
       return self._argv[index]
@@ -44,10 +44,11 @@ if __name__ == '__main__':
 
   # sys.argv を差し替え
   sys.argv = ArgvProxy(sys.argv)
-from module.shared import ROOT_DIR, device, is_half
+
+from modules.shared import ROOT_DIR, device, is_half
 MODELS_DIR = os.path.join(ROOT_DIR, "models")
-if sys.argv.get('list_model'):
-    os.system(f"for i in {MODELS_DIR}/*.pth; do " + 'echo \"${i%.pth}\"; done')
+if sys.argv.get('list_models'):
+    os.system(f"for i in {MODELS_DIR}/checkpoints/*.pth; do " + 'i=$(basename "$i"); echo "- ${i%.pth}"; done')
     sys.exit(0)
 
 
