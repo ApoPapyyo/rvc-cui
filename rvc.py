@@ -24,7 +24,9 @@ if __name__ == '__main__':
       self._opts = vars(opts)
       self._argv = [self._org_argv[0]] + unknown
       if self._opts['output'] == '' and self._opts['input'] != '':
-          self._opts['output'] = os.path.basename(self._opts['input']) + '_' + self._opts['model'] + '.wav'
+          base = os.path.basename(self._opts['input'])
+          basename, _ = os.path.splitext(base)
+          self._opts['output'] = basename + '_by_' + self._opts['model'] + '.wav'
 
     def __getitem__(self, index):
       return self._argv[index]
