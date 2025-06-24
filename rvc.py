@@ -1,6 +1,19 @@
 import os
 import sys
 import argparse
+
+def list_models(dir):
+    f = False
+    i = 0
+    for filename in os.listdir(dir):
+        if filename.endswith('.pth'):
+            print(f"{i+1}. {filename}")
+            f = True
+            i+=1
+    if not f:
+        print("No Models installed")
+    sys.exit(0)
+
 if __name__ == '__main__':
   class ArgvProxy:
     def __init__(self, original_argv):
@@ -18,16 +31,14 @@ if __name__ == '__main__':
       parser.add_argument('--faiss-index-file', type=str, default='')
       parser.add_argument('--retrieval-feature-ratio', type=float, default=1.0)
       parser.add_argument('--list-models', help='Show installed model name', action='store_true')
+      parser.add_argument('--use-cpu', action='store_true')
       if len(self._org_argv) <= 1:
         self._org_argv.append('--help')
       opts, unknown = parser.parse_known_args()
       self._opts = vars(opts)
       self._argv = [self._org_argv[0]] + unknown
-      if self._opts['output'] == '' and self._opts['input'] != '':
-          base = os.path.basename(self._opts['input'])
-          basename, _ = os.path.splitext(base)
-          self._opts['output'] = basename + '_by_' + self._opts['model'] + '.wav'
 
+      self.default_set()
     def __getitem__(self, index):
       return self._argv[index]
 
@@ -42,6 +53,11 @@ if __name__ == '__main__':
     
     def get(self, key):
       return self._opts[key]
+    def default_set(self):
+        if self._opts['output'] == '' and self._opts['input'] != '':
+          base = os.path.basename(self._opts['input'])
+          basename, _ = os.path.splitext(base)
+          self._opts['output'] = basename + '_by_' + self._opts['model'] + '.wav'
     
 
   # sys.argv を差し替え
@@ -49,27 +65,18 @@ if __name__ == '__main__':
 
 
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
-if sys.argv.get('list_models'):
-    f = False
-    i = 0
-    for filename in os.listdir(MODELS_DIR):
-        if filename.endswith('.pth'):
-            print(f"{i+1}. {filename}")
-            f = True
-            i+=1
-    if not f:
-        print("No Models installed")
-    sys.exit(0)
-
-
+import torch
 from modules.shared import device, is_half
+
+if sys.argv.get('use_cpu'):
+    device = torch.device('cpu')
+
 from modules.core import preload
 preload()
 
 import re
 from typing import *
 
-import torch
 from fairseq import checkpoint_utils
 from fairseq.models.hubert.hubert import HubertModel
 from pydub import AudioSegment
