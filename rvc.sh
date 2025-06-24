@@ -1,6 +1,6 @@
 #!/bin/bash
 
-base=$(dirname "$0")
+base=$(realpath "$0")
 
 source $base/venv/bin/activate
 
