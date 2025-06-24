@@ -1,7 +1,11 @@
 #!/bin/bash
 
-base=$(realpath "$0")
+base=$(realpath "`dirname $0`")
 
-source $base/venv/bin/activate
+if ! [ -e "$base/venv" ]; then
+    "$base/setup.sh"
+fi
 
-$base/venv/bin/python3.10 $base/rvc.py "$@"
+source "$base/venv/bin/activate"
+
+"$base/venv/bin/python3.10" $base/rvc.py "$@"
