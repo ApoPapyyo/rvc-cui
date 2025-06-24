@@ -115,7 +115,7 @@ def prepare_environment():
 
     if not is_installed("pyngrok") and ngrok:
         run_pip("install pyngrok", "ngrok")
-
+    run_pip("install pip==24.0", "pip==24.0")
     run(
         f'"{python}" -m pip install -r requirements.txt',
         desc=f"Installing requirements",
