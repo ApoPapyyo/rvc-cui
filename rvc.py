@@ -47,14 +47,23 @@ if __name__ == '__main__':
   # sys.argv を差し替え
   sys.argv = ArgvProxy(sys.argv)
 
-from modules.shared import ROOT_DIR, device, is_half
-from modules.core import preload
 
-MODELS_DIR = os.path.join(ROOT_DIR, "models")
+MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
 if sys.argv.get('list_models'):
-    os.system(f"for i in {MODELS_DIR}/checkpoints/*.pth; do " + 'i=$(basename "$i"); echo "- ${i%.pth}"; done')
+    f = False
+    i = 0
+    for filename in os.listdir(MODELS_DIR):
+        if filename.endswith('.pth'):
+            print(f"{i+1}. {filename}")
+            f = True
+            i+=1
+    if not f:
+        print("No Models installed")
     sys.exit(0)
 
+
+from modules.shared import device, is_half
+from modules.core import preload
 preload()
 
 import re
