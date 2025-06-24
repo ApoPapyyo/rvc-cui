@@ -8,4 +8,4 @@ fi
 
 source "$base/venv/bin/activate"
 
-"$base/venv/bin/python3.10" $base/rvc.py "$@"
+"$base/venv/bin/python3.10" "$base/rvc.py" "$@"
