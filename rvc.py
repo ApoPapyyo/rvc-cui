@@ -48,7 +48,7 @@ if __name__ == '__main__':
   sys.argv = ArgvProxy(sys.argv)
 
 
-MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models")
+MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
 if sys.argv.get('list_models'):
     f = False
     i = 0
