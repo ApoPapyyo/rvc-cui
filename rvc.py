@@ -48,11 +48,14 @@ if __name__ == '__main__':
   sys.argv = ArgvProxy(sys.argv)
 
 from modules.shared import ROOT_DIR, device, is_half
+from modules.core import preload
+
 MODELS_DIR = os.path.join(ROOT_DIR, "models")
 if sys.argv.get('list_models'):
     os.system(f"for i in {MODELS_DIR}/checkpoints/*.pth; do " + 'i=$(basename "$i"); echo "- ${i%.pth}"; done')
     sys.exit(0)
 
+preload()
 
 import re
 from typing import *
