@@ -71,8 +71,14 @@ from modules.shared import device, is_half
 if sys.argv.get('use_cpu'):
     device = torch.device('cpu')
 
+import requests
+from requests.exceptions import ConnectionError
 from modules.core import preload
-preload()
+try:
+    preload()
+except ConnectionError as e:
+    print("Network is not available. Skip preload()")
+
 
 import re
 from typing import *
